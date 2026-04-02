@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="eng">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bosch Home Connect – Galaxy Watch 7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────
+   TOKENS
+───────────────────────────────────────── */
+:root {
+  --bg-page:    #D8D8D8;
+  --bg-watch:   #EFEFEF;
+  --bg-card:    #FFFFFF;
+  --accent:     #1245C8;
+  --accent-lt:  #E6EDFB;
+  --accent-dk:  #0D35A0;
+  --txt-1:      #0A0A0A;   /* AAA */
+  --txt-2:      #1E1E1E;   /* AAA */
+  --txt-3:      #4A4A4A;   /* AA+ */
+  --txt-m:      #6A6A6A;
+  --warn:       #6B2F00;
+  --warn-bg:    #FEF0C7;
+  --warn-bdr:   #F59E0B;
+  --ok:         #064E3B;
+  --ok-bg:      #D1FAE5;
+  --border:     rgba(0,0,0,0.09);
+  --shadow-w:   0 20px 60px rgba(0,0,0,0.40), 0 4px 16px rgba(0,0,0,0.22);
+  --dur:        0.28s;
+  --ease:       cubic-bezier(.4,0,.2,1);
+  --font:       'Plus Jakarta Sans', sans-serif;
+
+  /* Watch geometry */
+  --wsize: 420px;           /* outer frame diameter */
+  --bezel: 24px;            /* frame thickness */
+  --scr: calc(var(--wsize) - var(--bezel)*2);   /* 372px visible screen */
+
+  /* Safe-zone: content must stay inside inscribed square of the circle
+     inscribed square side = r√2 where r = screen_radius = 186px
+     side = 186 * 1.414 ≈ 263px → margin from edge = (372-263)/2 ≈ 55px
+     We use 48px for slight extra breathing room → comfortable safe zone */
+  --safe: 48px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: var(--font);
+  background: var(--bg-page);
+  color: var(--txt-1);
+  min-height: auto;   /* Wix: NO 100vh */
+  padding: 36px 16px 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+button { font-family: var(--font); cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ─────────────────────────────────────────
+   SIDE-BY-SIDE LAYOUT
+───────────────────────────────────────── */
+.stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 880px;
+}
+.info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+/* Brand */
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 36px; height: 36px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.brand-mark svg { width: 20px; height: 20px; }
+.brand-name { font-size: 16px; font-weight: 800; color: var(--txt-1); letter-spacing: -.3px; }
+.brand-sub  { font-size: 10px; font-weight: 500; color: var(--txt-m); margin-top: 1px; }
+
+/* Lang button */
+.lang-btn {
+  align-self: flex-start;
+  padding: 5px 14px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  font-size: 11px; font-weight: 700; color: var(--txt-2);
+  box-shadow: 0 1px 4px rgba(0,0,0,.09);
+  transition: background .15s, border-color .15s;
+}
+.lang-btn:hover { background: var(--accent-lt); border-color: var(--accent); }
+
+/* Spec card */
+.spec-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.spec-card h3 {
+  font-size: 9px; font-weight: 700; color: var(--txt-m);
+  letter-spacing: 1.1px; text-transform: uppercase; margin-bottom: 10px;
+}
+.spec-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 11px;
+}
+.spec-row:last-child { border-bottom: none; }
+.spec-k { font-weight: 500; color: var(--txt-m); }
+.spec-v { font-weight: 700; color: var(--txt-2); }
+
+/* Flow nav */
+.flow-nav { display: flex; flex-direction: column; gap: 5px; }
+.fn-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: background .13s, border-color .13s;
+}
+.fn-row:hover, .fn-row.active { background: var(--accent-lt); border-color: rgba(18,69,200,.3); }
+.fn-num {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--bg-page); border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 800; color: var(--txt-m);
+  flex-shrink: 0; transition: all .18s;
+}
+.fn-num.done    { background: var(--ok);     border-color: var(--ok);     color: #fff; }
+.fn-num.current { background: var(--accent); border-color: var(--accent); color: #fff; }
+.fn-label { font-size: 11px; font-weight: 600; color: var(--txt-2); }
+
+/* ─────────────────────────────────────────
+   WATCH FRAME
+───────────────────────────────────────── */
+.watch-wrap { position: relative; flex-shrink: 0; }
+.watch-frame {
+  position: relative;
+  width: var(--wsize); height: var(--wsize);
+  background: linear-gradient(145deg, #2E2E2E 0%, #0E0E0E 55%, #1C1C1C 100%);
+  border-radius: 50%;
+  box-shadow: var(--shadow-w),
+              inset 0 2px 6px rgba(255,255,255,.07),
+              inset 0 -3px 6px rgba(0,0,0,.5);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.watch-frame::before {
+  content: ''; position: absolute; inset: 5px; border-radius: 50%;
+  background: linear-gradient(155deg, #404040 0%, #1A1A1A 50%, #2C2C2C 100%);
+  box-shadow: inset 0 1px 3px rgba(255,255,255,.06);
+}
+.crown {
+  position: absolute; right: -12px; top: calc(50% - 30px);
+  width: 8px; height: 44px;
+  background: linear-gradient(90deg,#333,#555,#333);
+  border-radius: 4px; box-shadow: 2px 0 6px rgba(0,0,0,.5); z-index: 10;
+}
+.crown::after {
+  content: ''; position: absolute; top: 50%; left: 1px; right: 1px; height: 14px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg,#555,#777,#555); border-radius: 3px;
+}
+.pwr-btn {
+  position: absolute; right: -10px; top: calc(50% + 22px);
+  width: 7px; height: 22px;
+  background: linear-gradient(90deg,#333,#555,#333);
+  border-radius: 3px; box-shadow: 2px 0 4px rgba(0,0,0,.45); z-index: 10;
+}
+
+/* ─────────────────────────────────────────
+   SCREEN VIEWPORT — strictly circular
+───────────────────────────────────────── */
+.watch-screen {
+  position: relative;
+  width: var(--scr); height: var(--scr);
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg-watch);
+  z-index: 2;
+  box-shadow: inset 0 0 20px rgba(0,0,0,.08);
+}
+
+/* ─────────────────────────────────────────
+   SCREEN BASE
+   Each screen fills the circle. Content is
+   placed in a safe-zone container.
+───────────────────────────────────────── */
+.scr {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-watch);
+  opacity: 0;
+  transform: scale(.93) translateX(24px);
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  will-change: opacity, transform;
+}
+.scr.active   { opacity: 1; transform: scale(1) translateX(0); pointer-events: all; }
+.scr.exit-l   { opacity: 0; transform: scale(.93) translateX(-24px); }
+
+/* Safe zone box — centered square inside circle */
+/* Width = screen_diameter - 2×safe = 372 - 96 = 276px
+   Height = same (square is safest for circle) */
+.sz {
+  width:  calc(var(--scr) - var(--safe)*2);   /* 276px */
+  height: calc(var(--scr) - var(--safe)*2);   /* 276px */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;   /* clip, not scroll — scroll is inside children */
+  gap: 0;
+}
+
+/* ─────────────────────────────────────────
+   PILL BUTTON SYSTEM
+   Width = 76% of safe-zone width, centered
+   This keeps buttons away from circular clip
+───────────────────────────────────────── */
+.pill-wrap {
+  display: flex; flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.pill {
+  width: 76%;
+  padding: 9px 0;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 999px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: .1px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(18,69,200,.32);
+  transition: background .15s, transform .1s;
+}
+.pill:active { transform: scale(.96); background: var(--accent-dk); }
+.pill.ghost {
+  background: transparent; color: var(--txt-2);
+  border: 1.5px solid rgba(0,0,0,.15);
+  box-shadow: none;
+}
+.pill.ghost:active { background: rgba(0,0,0,.06); }
+.pill.warn-pill {
+  background: var(--warn); color: #fff;
+  box-shadow: 0 2px 8px rgba(107,47,0,.3);
+}
+
+/* ─────────────────────────────────────────
+   BACK BUTTON — safe zone aware
+───────────────────────────────────────── */
+.back-row {
+  display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+  margin-bottom: 8px;
+}
+.back-btn {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: rgba(0,0,0,.06);
+  border: none; border-radius: 999px;
+  padding: 4px 10px 4px 7px;
+  font-size: 10px; font-weight: 700; color: var(--txt-2);
+  transition: background .13s;
+}
+.back-btn:active { background: rgba(0,0,0,.12); }
+.back-btn svg { width: 11px; height: 11px; }
+
+/* ─────────────────────────────────────────
+   SHARED WATCH TYPOGRAPHY
+───────────────────────────────────────── */
+.w-title { font-size: 12px; font-weight: 800; color: var(--txt-1); letter-spacing: -.2px; }
+.w-sub   { font-size: 9.5px; font-weight: 500; color: var(--txt-3); margin-top: 1px; }
+.w-chip  {
+  display: inline-block;
+  font-size: 9px; font-weight: 700; color: var(--accent);
+  background: var(--accent-lt); padding: 2px 7px; border-radius: 999px;
+}
+
+/* ─────────────────────────────────────────
+   SCROLL LIST — no mask
+───────────────────────────────────────── */
+.w-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 2px 0 4px;
+  scrollbar-width: none; -ms-overflow-style: none;
+  /* NO mask-image */
+}
+.w-list::-webkit-scrollbar { display: none; }
+
+/* List item card */
+.lcard {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 10px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: background .12s, border-color .12s, transform .1s;
+  flex-shrink: 0;
+}
+.lcard:active, .lcard:focus-visible { transform: scale(.97); background: var(--accent-lt); border-color: rgba(18,69,200,.28); }
+.lcard.sel { background: var(--accent-lt); border-color: rgba(18,69,200,.35); }
+.lcard-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--txt-m); flex-shrink: 0; transition: background .2s; }
+.lcard.sel .lcard-dot { background: var(--accent); }
+.lcard-body { flex: 1; min-width: 0; }
+.lcard-name { font-size: 11px; font-weight: 700; color: var(--txt-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lcard-meta { font-size: 9px; font-weight: 600; color: var(--txt-3); margin-top: 1px; }
+.lcard-chev { flex-shrink: 0; opacity: .35; }
+.lcard-chev svg { width: 10px; height: 10px; }
+.eco-tag { font-size: 8px; font-weight: 800; color: var(--ok); background: var(--ok-bg); padding: 1px 5px; border-radius: 4px; flex-shrink: 0; }
+
+/* Toggle */
+.tog { position: relative; width: 28px; height: 16px; flex-shrink: 0; }
+.tog input { display: none; }
+.tog-t { position: absolute; inset: 0; background: #C8D0DC; border-radius: 999px; cursor: pointer; transition: background .2s; }
+.tog input:checked + .tog-t { background: var(--accent); }
+.tog-k {
+  position: absolute; top: 2px; left: 2px;
+  width: 12px; height: 12px;
+  background: #fff; border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  transition: transform .18s var(--ease);
+  pointer-events: none;
+}
+.tog input:checked + .tog-t + .tog-k { transform: translateX(12px); }
+
+/* Option row */
+.opt-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  flex-shrink: 0;
+}
+.opt-row.tap { cursor: pointer; transition: background .12s; }
+.opt-row.tap:active { background: var(--accent-lt); }
+.opt-k { font-size: 10px; font-weight: 700; color: var(--txt-1); }
+.opt-v { font-size: 10px; font-weight: 700; color: var(--accent); }
+
+/* ─────────────────────────────────────────
+   SCREEN 1 — STATUS
+───────────────────────────────────────── */
+#s-status .sz {
+  justify-content: space-between;
+  padding: 4px 0;
+}
+.st-toprow { display: flex; align-items: center; justify-content: flex-start; gap: 8px; flex-shrink: 0; padding: 0 4px; }
+.st-clk  { font-size: 11px; font-weight: 700; color: var(--txt-m); letter-spacing: .7px; }
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #22C55E;
+  animation: livepulse 2s infinite;
+}
+@keyframes livepulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34,197,94,.6); }
+  70%  { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+/* Warning banner */
+.warn-banner {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--warn-bg);
+  border: 1.5px solid var(--warn-bdr);
+  border-radius: 8px; padding: 6px 8px;
+  cursor: pointer; flex-shrink: 0;
+  transition: opacity .15s;
+}
+.warn-banner:active { opacity: .8; }
+.warn-banner.hidden { display: none; }
+.warn-icon { width: 14px; height: 14px; border-radius: 50%; background: var(--warn-bdr); display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 900; color: #fff; flex-shrink: 0; }
+.warn-txt  { font-size: 9.5px; font-weight: 700; color: var(--warn); flex: 1; line-height: 1.3; }
+.warn-arr  { font-size: 9px; color: var(--warn); }
+/* Icon + label */
+.st-center { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; justify-content: center; }
+.st-icon-box {
+  width: 52px; height: 52px;
+  background: var(--accent-lt);
+  border-radius: 14px;
+  border: 1.5px solid rgba(18,69,200,.18);
+  display: flex; align-items: center; justify-content: center;
+}
+.st-icon-box svg { width: 28px; height: 28px; }
+.st-title { font-size: 13px; font-weight: 800; color: var(--txt-1); }
+.st-hint  { font-size: 10px; font-weight: 700; color: var(--txt-2); margin-top: 1px; }   /* AAA: #1E1E1E on #EFEFEF = 12:1 */
+
+/* ─────────────────────────────────────────
+   SCREEN 1b — SALT INFO
+───────────────────────────────────────── */
+#s-salt .sz { justify-content: space-between; padding: 2px 0; gap: 8px; }
+.salt-hdr { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.salt-emoji { font-size: 18px; }
+.salt-steps { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; scrollbar-width: none; }
+.salt-steps::-webkit-scrollbar { display: none; }
+.salt-step {
+  display: flex; gap: 6px; padding: 6px 8px;
+  background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border); flex-shrink: 0;
+}
+.sn { width: 13px; height: 13px; border-radius: 50%; background: var(--warn-bdr); color: #fff; font-size: 7.5px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.st { font-size: 9px; font-weight: 600; color: var(--txt-2); line-height: 1.4; }
+
+/* ─────────────────────────────────────────
+   SCREEN 2 — PROGRAMS
+───────────────────────────────────────── */
+#s-programs .sz { padding: 2px 0; gap: 8px; }
+.new-prog-btn {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 8px 0;
+  background: var(--accent-lt);
+  border: 1.5px dashed rgba(18,69,200,.4);
+  border-radius: 10px;
+  font-size: 10.5px; font-weight: 700; color: var(--accent);
+  cursor: pointer; flex-shrink: 0;
+  transition: background .12s;
+}
+.new-prog-btn:active { background: rgba(18,69,200,.14); }
+
+/* ─────────────────────────────────────────
+   SCREEN 3 — OPTIONS
+───────────────────────────────────────── */
+#s-options .sz { padding: 2px 0; gap: 7px; }
+
+/* ─────────────────────────────────────────
+   SCREEN 4 — CONFIRM
+───────────────────────────────────────── */
+#s-confirm .sz { padding: 2px 0; gap: 7px; justify-content: space-between; }
+.conf-block {
+  background: var(--bg-card); border-radius: 10px; border: 1.5px solid var(--border); overflow: hidden; flex-shrink: 0;
+}
+.conf-row2 {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 10px; border-bottom: 1px solid var(--border); font-size: 9px;
+}
+.conf-row2:last-child { border-bottom: none; }
+.conf-k { font-weight: 600; color: var(--txt-m); }
+.conf-v { font-weight: 700; color: var(--txt-2); }
+.conf-v.on { color: var(--accent); }
+.child-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px; background: var(--bg-card); border-radius: 10px; border: 1.5px solid var(--border); flex-shrink: 0;
+}
+.child-lbl { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; color: var(--txt-1); }
+
+/* ─────────────────────────────────────────
+   SCREEN 5 — CUSTOM PROGRAM
+───────────────────────────────────────── */
+#s-custom .sz { padding: 2px 0; gap: 8px; justify-content: space-between; }
+.cust-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px; background: var(--bg-card); border-radius: 10px; border: 1.5px solid var(--border); flex-shrink: 0;
+}
+.cust-k { font-size: 10px; font-weight: 700; color: var(--txt-1); }
+.cust-ctrl { display: flex; align-items: center; gap: 5px; }
+.adj-btn {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent-lt); border: 1.5px solid rgba(18,69,200,.22);
+  font-size: 14px; font-weight: 700; color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background .12s; line-height: 1;
+}
+.adj-btn:active { background: rgba(18,69,200,.2); }
+.cust-val { font-size: 11px; font-weight: 800; color: var(--txt-1); min-width: 36px; text-align: center; }
+.cust-name-row {
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 10px; background: var(--bg-card); border-radius: 10px; border: 1.5px solid var(--border); flex-shrink: 0;
+}
+.cust-inp {
+  flex: 1; border: none; background: transparent;
+  font-family: var(--font); font-size: 10px; font-weight: 600; color: var(--txt-1);
+  outline: none;
+}
+.cust-inp::placeholder { color: var(--txt-m); }
+
+/* ─────────────────────────────────────────
+   SCREEN 6 — RUNNING / TIMER
+───────────────────────────────────────── */
+#s-running .sz { align-items: center; justify-content: center; gap: 8px; padding: 4px 0; }
+.run-ring { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+.run-ring svg { width: 80px; height: 80px; transform: rotate(-90deg); }
+.ring-bg   { fill: none; stroke: rgba(18,69,200,.12); stroke-width: 6; }
+.ring-prog { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round;
+             stroke-dasharray: 219.9; /* 2π×35 */
+             stroke-dashoffset: 219.9;
+             transition: stroke-dashoffset .9s linear; }
+.ring-ctr {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: var(--accent); letter-spacing: -.5px;
+}
+.run-prog-name { font-size: 11px; font-weight: 800; color: var(--txt-1); text-align: center; }
+.run-total     { font-size: 9px; font-weight: 600; color: var(--txt-3); text-align: center; }
+.run-timer-big {
+  font-size: 28px; font-weight: 800; color: var(--txt-1);
+  letter-spacing: -1.5px; font-variant-numeric: tabular-nums; text-align: center;
+}
+.run-timer-lbl { font-size: 8px; font-weight: 700; color: var(--txt-m); letter-spacing: .8px; text-align: center; margin-top: -4px; }
+.run-dots { display: flex; gap: 4px; }
+.run-dot  { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: .2; animation: dp 1.4s infinite; }
+.run-dot:nth-child(2) { animation-delay: .2s; }
+.run-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes dp {
+  0%,100% { opacity: .2; transform: scale(1); }
+  50%      { opacity: 1;  transform: scale(1.4); }
+}
+
+/* ─────────────────────────────────────────
+   SCREEN 7 — DONE
+───────────────────────────────────────── */
+#s-done .sz { align-items: center; justify-content: center; gap: 9px; padding: 4px 0; }
+.done-ring {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--ok-bg);
+  display: flex; align-items: center; justify-content: center;
+  animation: dopop .4s var(--ease) both;
+}
+@keyframes dopop { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.done-ring svg { width: 28px; height: 28px; }
+.done-title { font-size: 14px; font-weight: 800; color: var(--txt-1); text-align: center; }
+.done-sub   { font-size: 10px; font-weight: 600; color: var(--txt-3); text-align: center; }
+.done-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: var(--ok-bg); border: 1.5px solid rgba(6,78,59,.22);
+  border-radius: 8px;
+}
+.done-badge-txt { font-size: 10px; font-weight: 700; color: var(--ok); }
+.done-stats { display: flex; gap: 5px; }
+.done-stat {
+  flex: 1; padding: 6px 8px; text-align: center;
+  background: var(--bg-card); border-radius: 8px; border: 1.5px solid var(--border);
+}
+.done-sv { font-size: 11px; font-weight: 800; color: var(--txt-1); }
+.done-sk { font-size: 8px; font-weight: 600; color: var(--txt-m); margin-top: 1px; }
+
+/* ─────────────────────────────────────────
+   TOKEN CARD (below watch)
+───────────────────────────────────────── */
+.tok-card {
+  background: var(--bg-card);
+  border-radius: 12px; padding: 16px;
+  max-width: 860px; width: 100%;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  border: 1.5px solid var(--border);
+}
+.tok-card h2 { font-size: 9px; font-weight: 700; color: var(--txt-m); letter-spacing: 1.1px; text-transform: uppercase; margin-bottom: 10px; }
+.tok-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+.tok-sw { border-radius: 7px; overflow: hidden; border: 1px solid var(--border); min-width: 86px; }
+.tok-c  { height: 24px; }
+.tok-l  { padding: 3px 6px; font-size: 8.5px; font-weight: 700; color: var(--txt-m); background: #fafafa; }
+
+/* ─────────────────────────────────────────
+   RESPONSIVE — Wix safe
+───────────────────────────────────────── */
+@media (max-width: 700px) {
+  .stage { flex-direction: column; gap: 24px; }
+  .info-col { max-width: 100%; flex-direction: row; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
+  .spec-card, .flow-nav { flex: 1; min-width: 180px; }
+  .lang-btn { align-self: center; }
+}
+@media (max-width: 480px) {
+  :root { --wsize: 340px; --bezel: 20px; --safe: 38px; }
+  body { padding: 24px 10px 44px; }
+}
+@media (max-width: 370px) {
+  :root { --wsize: 300px; --bezel: 18px; --safe: 34px; }
+}
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div id="aria-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ══════════ STAGE: side-by-side ══════════ -->
+<div class="stage">
+
+  <!-- ── INFO COL ── -->
+  <aside class="info-col">
+
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="16" rx="2" stroke="#fff" stroke-width="1.8"/>
+          <line x1="3" y1="9" x2="21" y2="9" stroke="#fff" stroke-width="1.8"/>
+          <circle cx="7" cy="6.5" r="1.1" fill="#fff"/>
+          <circle cx="10.5" cy="6.5" r="1.1" fill="#fff"/>
+          <circle cx="12" cy="15" r="3.8" stroke="#fff" stroke-width="1.6"/>
+          <circle cx="12" cy="15" r="1.4" fill="#fff"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">Bosch Home</div>
+        <div class="brand-sub">Galaxy Watch 7 · Wear OS Proto</div>
+      </div>
+    </div>
+
+    <button class="lang-btn" id="lang-btn" aria-label="Switch language, currently English" onclick="toggleLang()">
+      🌐 <span id="lang-lbl">EN → TR</span>
+    </button>
+
+    <div class="spec-card">
+      <h3>Teknik</h3>
+      <div class="spec-row"><span class="spec-k">Ekran</span><span class="spec-v">420×420 px</span></div>
+      <div class="spec-row"><span class="spec-k">Safe Zone</span><span class="spec-v">±48px inset</span></div>
+      <div class="spec-row"><span class="spec-k">Kontrast</span><span class="spec-v">AAA (12:1)</span></div>
+      <div class="spec-row"><span class="spec-k">Sayaç</span><span class="spec-v">10s → Bitti</span></div>
+      <div class="spec-row"><span class="spec-k">iframe</span><span class="spec-v">Wix uyumlu</span></div>
+    </div>
+
+    <div class="flow-nav" id="flow-nav">
+      <div class="fn-row active" id="fn0" onclick="goTo('s-status')" role="button" tabindex="0" aria-label="Durum ekranı">
+        <span class="fn-num current" id="fn0n">1</span><span class="fn-label" data-tr="Durum" data-en="Status">Durum</span>
+      </div>
+      <div class="fn-row" id="fn1" onclick="goTo('s-programs')" role="button" tabindex="0" aria-label="Program listesi">
+        <span class="fn-num" id="fn1n">2</span><span class="fn-label" data-tr="Programlar" data-en="Programs">Programlar</span>
+      </div>
+      <div class="fn-row" id="fn2" onclick="goTo('s-options')" role="button" tabindex="0" aria-label="Ayarlar ekranı">
+        <span class="fn-num" id="fn2n">3</span><span class="fn-label" data-tr="Ayarlar" data-en="Options">Ayarlar</span>
+      </div>
+      <div class="fn-row" id="fn3" onclick="goTo('s-confirm')" role="button" tabindex="0" aria-label="Onay ekranı">
+        <span class="fn-num" id="fn3n">4</span><span class="fn-label" data-tr="Onay" data-en="Confirm">Onay</span>
+      </div>
+      <div class="fn-row" id="fn4" onclick="startRunning()" role="button" tabindex="0" aria-label="Çalışıyor ekranı">
+        <span class="fn-num" id="fn4n">5</span><span class="fn-label" data-tr="Çalışıyor" data-en="Running">Çalışıyor</span>
+      </div>
+      <div class="fn-row" id="fn5" onclick="goTo('s-done')" role="button" tabindex="0" aria-label="Tamamlandı ekranı">
+        <span class="fn-num" id="fn5n">6</span><span class="fn-label" data-tr="Bitti" data-en="Done">Bitti</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── WATCH ── -->
+  <main>
+    <div class="watch-wrap" role="region" aria-label="Galaxy Watch 7 simülatörü">
+      <div class="watch-frame" aria-hidden="true">
+        <div class="crown"></div>
+        <div class="pwr-btn"></div>
+
+        <div class="watch-screen">
+
+          <!-- ══ S1: STATUS ══ -->
+          <div id="s-status" class="scr active" role="main" aria-label="Bulaşık makinesi durum ekranı">
+            <div class="sz">
+              <div class="st-toprow">
+                <span class="st-clk" id="st-clk">10:45</span>
+                <div class="live-dot" title="Bağlı" aria-label="Bağlantı aktif"></div>
+              </div>
+
+              <button class="warn-banner" id="warn-btn"
+                aria-live="assertive"
+                aria-label="Uyarı: Tuz tükenmiş. Talimatlar için tıklayın."
+                onclick="goTo('s-salt')">
+                <div class="warn-icon" aria-hidden="true">!</div>
+                <span class="warn-txt" data-tr="Tuz tükenmiş — Tıkla" data-en="Salt empty — Tap">Tuz tükenmiş — Tıkla</span>
+                <span class="warn-arr" aria-hidden="true">›</span>
+              </button>
+
+              <div class="st-center">
+                <div class="st-icon-box" aria-hidden="true">
+                  <svg viewBox="0 0 40 40" fill="none">
+                    <rect x="5" y="6" width="30" height="28" rx="3" stroke="#1245C8" stroke-width="2"/>
+                    <line x1="5" y1="13" x2="35" y2="13" stroke="#1245C8" stroke-width="2"/>
+                    <circle cx="10" cy="9.5" r="1.5" fill="#1245C8"/>
+                    <circle cx="14.5" cy="9.5" r="1.5" fill="#1245C8"/>
+                    <circle cx="20" cy="26" r="6" stroke="#1245C8" stroke-width="2"/>
+                    <circle cx="20" cy="26" r="2.2" fill="#1245C8"/>
+                  </svg>
+                </div>
+                <p class="st-title" data-tr="Hazır" data-en="Ready">Hazır</p>
+                <p class="st-hint"  data-tr="Son: Eco 50° · 1sa 32dk" data-en="Last: Eco 50° · 1h 32m">Son: Eco 50° · 1sa 32dk</p>
+              </div>
+
+              <div class="pill-wrap">
+                <button class="pill" aria-label="Program seçin ve başlatın" onclick="goTo('s-programs')"
+                  data-tr="Program Seç &amp; Başlat" data-en="Select &amp; Start">Program Seç &amp; Başlat</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ S1b: SALT ══ -->
+          <div id="s-salt" class="scr" role="main" aria-label="Tuz ekleme talimatı">
+            <div class="sz" style="justify-content:space-between;gap:8px;">
+              <div class="back-row">
+                <button class="back-btn" aria-label="Durum ekranına geri dön" onclick="goTo('s-status')">
+                  <svg viewBox="0 0 11 11" fill="none"><path d="M7.5 2L3.5 5.5 7.5 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                  <span data-tr="Geri" data-en="Back">Geri</span>
+                </button>
+                <span class="salt-emoji" aria-hidden="true">🧂</span>
+                <span class="w-title" data-tr="Tuz Ekle" data-en="Add Salt">Tuz Ekle</span>
+              </div>
+              <div class="salt-steps">
+                <div class="salt-step"><div class="sn">1</div><p class="st" data-tr="Alt sepeti çıkarın ve makineyi açık bırakın." data-en="Remove lower basket and keep door open.">Alt sepeti çıkarın ve makineyi açık bırakın.</p></div>
+                <div class="salt-step"><div class="sn">2</div><p class="st" data-tr="Tuz haznesinin kapağını saat tersine çevirin." data-en="Turn salt cap counter-clockwise to open.">Tuz haznesinin kapağını saat tersine çevirin.</p></div>
+                <div class="salt-step"><div class="sn">3</div><p class="st" data-tr="Huni kullanarak bulaşık tuzu ekleyin (max 1 kg)." data-en="Use funnel to add dishwasher salt (max 1 kg).">Huni ile bulaşık tuzu ekleyin (max 1 kg).</p></div>
+                <div class="salt-step"><div class="sn">4</div><p class="st" data-tr="Kapağı kapatın. İlk yıkama artığı temizler." data-en="Close cap. First wash will clear any overflow.">Kapağı kapatın. İlk yıkama artığı temizler.</p></div>
+              </div>
+              <div class="pill-wrap">
+                <button class="pill ghost" aria-label="Talimatları okudum, kapat" onclick="dismissWarn()"
+                  data-tr="Anladım ✓" data-en="Got it ✓">Anladım ✓</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ S2: PROGRAMS ══ -->
+          <div id="s-programs" class="scr" role="main" aria-label="Program listesi ekranı">
+            <div class="sz" style="gap:8px;">
+              <div class="back-row">
+                <button class="back-btn" aria-label="Durum ekranına geri dön" onclick="goTo('s-status')">
+                  <svg viewBox="0 0 11 11" fill="none"><path d="M7.5 2L3.5 5.5 7.5 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                  <span data-tr="Geri" data-en="Back">Geri</span>
+                </button>
+                <span class="w-title" data-tr="Programlar" data-en="Programs">Programlar</span>
+              </div>
+
+              <div class="w-list" role="list" aria-label="Yıkama programı listesi">
+                <div class="lcard" role="listitem" id="pc-eco" tabindex="0"
+                  aria-label="Eco 50 derece, 1 saat 30 dakika"
+                  onclick="selProg('Eco 50°','eco')" onkeydown="if(event.key==='Enter')selProg('Eco 50°','eco')">
+                  <div class="lcard-dot"></div>
+                  <div class="lcard-body"><p class="lcard-name" data-tr="Eco 50°" data-en="Eco 50°">Eco 50°</p><p class="lcard-meta" data-tr="~1sa 30dk · Tavsiye" data-en="~1h 30m · Recommended">~1sa 30dk · Tavsiye</p></div>
+                  <span class="eco-tag">ECO</span>
+                  <span class="lcard-chev" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M3 2l3.5 3L3 8" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                </div>
+                <div class="lcard" role="listitem" id="pc-int" tabindex="0"
+                  aria-label="Yoğun 70 derece, 1 saat 55 dakika"
+                  onclick="selProg('Yoğun 70°','int')" onkeydown="if(event.key==='Enter')selProg('Yoğun 70°','int')">
+                  <div class="lcard-dot"></div>
+                  <div class="lcard-body"><p class="lcard-name" data-tr="Yoğun 70°" data-en="Intensive 70°">Yoğun 70°</p><p class="lcard-meta" data-tr="~1sa 55dk · Çok kirli" data-en="~1h 55m · Heavy soil">~1sa 55dk · Çok kirli</p></div>
+                  <span class="lcard-chev" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M3 2l3.5 3L3 8" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                </div>
+                <div class="lcard" role="listitem" id="pc-auto" tabindex="0"
+                  aria-label="Auto 45 ile 65 derece, 1 saat 10 dakika"
+                  onclick="selProg('Auto 45–65°','auto')" onkeydown="if(event.key==='Enter')selProg('Auto 45–65°','auto')">
+                  <div class="lcard-dot"></div>
+                  <div class="lcard-body"><p class="lcard-name" data-tr="Auto 45–65°" data-en="Auto 45–65°">Auto 45–65°</p><p class="lcard-meta" data-tr="~1sa 10dk · Akıllı" data-en="~1h 10m · Smart">~1sa 10dk · Akıllı</p></div>
+                  <span class="lcard-chev" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M3 2l3.5 3L3 8" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                </div>
+                <div class="lcard" role="listitem" id="pc-qk" tabindex="0"
+                  aria-label="Hızlı 45 derece, 30 dakika"
+                  onclick="selProg('Hızlı 45°','qk')" onkeydown="if(event.key==='Enter')selProg('Hızlı 45°','qk')">
+                  <div class="lcard-dot"></div>
+                  <div class="lcard-body"><p class="lcard-name" data-tr="Hızlı 45°" data-en="Quick 45°">Hızlı 45°</p><p class="lcard-meta" data-tr="~30dk · Az kirli" data-en="~30m · Light soil">~30dk · Az kirli</p></div>
+                  <span class="lcard-chev" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M3 2l3.5 3L3 8" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                </div>
+                <div class="lcard" role="listitem" id="pc-rn" tabindex="0"
+                  aria-label="Sadece durulama, 15 dakika"
+                  onclick="selProg('Durulama','rn')" onkeydown="if(event.key==='Enter')selProg('Durulama','rn')">
+                  <div class="lcard-dot"></div>
+                  <div class="lcard-body"><p class="lcard-name" data-tr="Durulama" data-en="Rinse Only">Durulama</p><p class="lcard-meta" data-tr="~15dk · Ön durulama" data-en="~15m · Pre-rinse">~15dk · Ön durulama</p></div>
+                  <span class="lcard-chev" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M3 2l3.5 3L3 8" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                </div>
+                <!-- Saved custom programs injected here -->
+                <div id="custom-list"></div>
+              </div>
+
+              <button class="new-prog-btn" aria-label="Yeni özel program oluştur" onclick="goTo('s-custom')">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><circle cx="5.5" cy="5.5" r="4.5" stroke="#1245C8" stroke-width="1.3"/><path d="M5.5 3v5M3 5.5h5" stroke="#1245C8" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <span data-tr="Program Oluştur +" data-en="Create Program +">Program Oluştur +</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ══ S3: OPTIONS ══ -->
+          <div id="s-options" class="scr" role="main" aria-label="Program ayarları ekranı">
+            <div class="sz" style="gap:7px;">
+              <div class="back-row">
+                <button class="back-btn" aria-label="Program listesine geri dön" onclick="goTo('s-programs')">
+                  <svg viewBox="0 0 11 11" fill="none"><path d="M7.5 2L3.5 5.5 7.5 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                  <span data-tr="Geri" data-en="Back">Geri</span>
+                </button>
+                <span class="w-title" data-tr="Ayarlar" data-en="Options">Ayarlar</span>
+                <span class="w-chip" id="opt-chip">Eco 50°</span>
+              </div>
+
+              <div class="w-list" role="list" aria-label="Program ayar seçenekleri">
+                <div class="opt-row" role="listitem">
+                  <span class="opt-k" data-tr="SpeedPerfect" data-en="SpeedPerfect">SpeedPerfect</span>
+                  <label class="tog" aria-label="SpeedPerfect aç kapat">
+                    <input type="checkbox" id="tog-sp" onchange="syncTog(this)">
+                    <div class="tog-t"></div><div class="tog-k"></div>
+                  </label>
+                </div>
+                <div class="opt-row" role="listitem">
+                  <span class="opt-k" data-tr="Yarım Doluluk" data-en="Half Load">Yarım Doluluk</span>
+                  <label class="tog" aria-label="Yarım doluluk aç kapat">
+                    <input type="checkbox" id="tog-hl" onchange="syncTog(this)">
+                    <div class="tog-t"></div><div class="tog-k"></div>
+                  </label>
+                </div>
+                <div class="opt-row" role="listitem">
+                  <span class="opt-k" data-tr="ExtraDry" data-en="ExtraDry">ExtraDry</span>
+                  <label class="tog" aria-label="ExtraDry aç kapat">
+                    <input type="checkbox" id="tog-ed" checked onchange="syncTog(this)">
+                    <div class="tog-t"></div><div class="tog-k"></div>
+                  </label>
+                </div>
+                <div class="opt-row tap" role="listitem" tabindex="0" id="delay-row"
+                  aria-label="Erteleme süresi, şu an kapalı"
+                  onclick="cycleDelay()" onkeydown="if(event.key==='Enter')cycleDelay()">
+                  <span class="opt-k" data-tr="Erteleme" data-en="Delay">Erteleme</span>
+                  <span class="opt-v" id="delay-v">Kapalı</span>
+                </div>
+              </div>
+
+              <div class="pill-wrap">
+                <button class="pill" aria-label="Onay ekranına geç" onclick="buildConfirm();goTo('s-confirm')"
+                  data-tr="Devam →" data-en="Continue →">Devam →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ S4: CONFIRM ══ -->
+          <div id="s-confirm" class="scr" role="main" aria-label="Program onay özet ekranı">
+            <div class="sz" style="justify-content:space-between;gap:7px;">
+              <div class="back-row">
+                <button class="back-btn" aria-label="Ayarlar ekranına geri dön" onclick="goTo('s-options')">
+                  <svg viewBox="0 0 11 11" fill="none"><path d="M7.5 2L3.5 5.5 7.5 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                  <span data-tr="Geri" data-en="Back">Geri</span>
+                </button>
+                <div><p class="w-title" data-tr="Özet" data-en="Summary">Özet</p><p class="w-sub" id="conf-prog-lbl">Eco 50°</p></div>
+              </div>
+
+              <div class="conf-block" role="list" aria-label="Seçilen ayarlar">
+                <div class="conf-row2"><span class="conf-k" data-tr="SpeedPerfect" data-en="SpeedPerfect">SpeedPerfect</span><span class="conf-v" id="cv-sp">Kapalı</span></div>
+                <div class="conf-row2"><span class="conf-k" data-tr="Yarım Doluluk" data-en="Half Load">Yarım Doluluk</span><span class="conf-v" id="cv-hl">Kapalı</span></div>
+                <div class="conf-row2"><span class="conf-k" data-tr="ExtraDry" data-en="ExtraDry">ExtraDry</span><span class="conf-v" id="cv-ed">Açık</span></div>
+                <div class="conf-row2"><span class="conf-k" data-tr="Erteleme" data-en="Delay">Erteleme</span><span class="conf-v" id="cv-dl">Kapalı</span></div>
+              </div>
+
+              <div class="child-row">
+                <div class="child-lbl"><span aria-hidden="true">🔒</span><span data-tr="Çocuk Kilidi" data-en="Child Lock">Çocuk Kilidi</span></div>
+                <label class="tog" aria-label="Çocuk kilidi aç kapat">
+                  <input type="checkbox" id="tog-cl" onchange="syncTog(this)">
+                  <div class="tog-t"></div><div class="tog-k"></div>
+                </label>
+              </div>
+
+              <div class="pill-wrap">
+                <button class="pill" aria-label="Programı şimdi başlat" onclick="startRunning()"
+                  data-tr="▶ Başlat" data-en="▶ Start">▶ Başlat</button>
+                <button class="pill ghost" aria-label="Vazgeç ve program listesine dön" onclick="goTo('s-programs')"
+                  data-tr="Vazgeç" data-en="Cancel">Vazgeç</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ S5: CUSTOM PROGRAM ══ -->
+          <div id="s-custom" class="scr" role="main" aria-label="Özel program oluştur ekranı">
+            <div class="sz" style="justify-content:space-between;gap:8px;">
+              <div class="back-row">
+                <button class="back-btn" aria-label="Program listesine geri dön" onclick="goTo('s-programs')">
+                  <svg viewBox="0 0 11 11" fill="none"><path d="M7.5 2L3.5 5.5 7.5 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                  <span data-tr="Geri" data-en="Back">Geri</span>
+                </button>
+                <span class="w-title" data-tr="Yeni Program" data-en="New Program">Yeni Program</span>
+              </div>
+
+              <div class="cust-row">
+                <span class="cust-k" data-tr="Sıcaklık" data-en="Temperature">Sıcaklık</span>
+                <div class="cust-ctrl">
+                  <button class="adj-btn" aria-label="Sıcaklığı azalt" onclick="adjC('temp',-10)">−</button>
+                  <span class="cust-val" id="cv-temp">50°</span>
+                  <button class="adj-btn" aria-label="Sıcaklığı artır"  onclick="adjC('temp',10)">+</button>
+                </div>
+              </div>
+
+              <div class="cust-row">
+                <span class="cust-k" data-tr="Süre (dk)" data-en="Duration (min)">Süre (dk)</span>
+                <div class="cust-ctrl">
+                  <button class="adj-btn" aria-label="Süreyi azalt" onclick="adjC('dur',-5)">−</button>
+                  <span class="cust-val" id="cv-dur">60dk</span>
+                  <button class="adj-btn" aria-label="Süreyi artır"  onclick="adjC('dur',5)">+</button>
+                </div>
+              </div>
+
+              <div class="cust-name-row">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M1.5 8.5h8M2 6.5l3.5-5.5 3.5 5.5" stroke="#6A6A6A" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <input class="cust-inp" id="cust-name" type="text" maxlength="14"
+                  placeholder="Program adı…"
+                  data-ph-tr="Program adı…" data-ph-en="Program name…"
+                  aria-label="Özel program adını girin" />
+              </div>
+
+              <div class="pill-wrap">
+                <button class="pill" aria-label="Özel programı kaydet ve başlat" onclick="saveAndRun()"
+                  data-tr="💾 Kaydet &amp; Başlat" data-en="💾 Save &amp; Start">💾 Kaydet &amp; Başlat</button>
+                <button class="pill ghost" aria-label="Sadece bir kez çalıştır, kaydetme" onclick="runOnce()"
+                  data-tr="▶ Tek Seferlik" data-en="▶ One-Time">▶ Tek Seferlik</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ S6: RUNNING / TIMER ══ -->
+          <div id="s-running" class="scr" role="main" aria-label="Program çalışıyor, geri sayım ekranı" aria-live="polite">
+            <div class="sz" style="align-items:center;justify-content:center;gap:8px;">
+
+              <div class="run-ring" aria-hidden="true">
+                <svg viewBox="0 0 80 80">
+                  <circle class="ring-bg"   cx="40" cy="40" r="35"/>
+                  <circle class="ring-prog" id="ring-prog" cx="40" cy="40" r="35"/>
+                </svg>
+                <div class="ring-ctr" id="ring-pct">0%</div>
+              </div>
+
+              <p class="run-prog-name" id="run-pname">Eco 50°</p>
+
+              <!-- Fixed total time label -->
+              <p class="run-total">
+                <span data-tr="Seçilen: " data-en="Total: ">Seçilen: </span><strong>03sa 06dk</strong>
+              </p>
+
+              <!-- BIG COUNTDOWN -->
+              <div>
+                <p class="run-timer-big" id="run-timer">00:10</p>
+                <p class="run-timer-lbl" data-tr="KALAN SÜRE" data-en="TIME LEFT">KALAN SÜRE</p>
+              </div>
+
+              <div class="run-dots" aria-hidden="true">
+                <div class="run-dot"></div><div class="run-dot"></div><div class="run-dot"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ S7: DONE ══ -->
+          <div id="s-done" class="scr" role="main" aria-label="Program tamamlandı ekranı" aria-live="polite">
+            <div class="sz" style="align-items:center;justify-content:center;gap:9px;">
+              <div class="done-ring" aria-hidden="true">
+                <svg viewBox="0 0 28 28" fill="none">
+                  <path d="M5 14l6 6L23 8" stroke="#064E3B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="done-title" data-tr="Tamamlandı!" data-en="All Done!">Tamamlandı!</p>
+              <p class="done-sub" data-tr="Yıkama başarılı 🎉" data-en="Wash complete 🎉">Yıkama başarılı 🎉</p>
+
+              <!-- "Makine Hazır" badge -->
+              <div class="done-badge" role="status" aria-live="polite">
+                <span aria-hidden="true">✅</span>
+                <span class="done-badge-txt" data-tr="Makine Hazır" data-en="Machine Ready">Makine Hazır</span>
+              </div>
+
+              <div class="done-stats">
+                <div class="done-stat"><p class="done-sv">3sa 06dk</p><p class="done-sk" data-tr="Toplam" data-en="Total">Toplam</p></div>
+                <div class="done-stat"><p class="done-sv">0.9 kWh</p><p class="done-sk" data-tr="Enerji" data-en="Energy">Enerji</p></div>
+              </div>
+
+              <div class="pill-wrap" style="width:100%">
+                <button class="pill" aria-label="Ana sayfaya dön" onclick="goHome()"
+                  data-tr="Ana Sayfaya Dön" data-en="Go to Home">Ana Sayfaya Dön</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /watch-screen -->
+      </div><!-- /watch-frame -->
+    </div>
+  </main>
+
+</div><!-- /stage -->
+
+<!-- TOKEN CARD -->
+<div class="tok-card" aria-label="Tasarım sistemi renk tokenleri">
+  <h2>Design Tokens</h2>
+  <div class="tok-grid">
+    <div class="tok-sw"><div class="tok-c" style="background:#1245C8"></div><div class="tok-l">Accent #1245C8</div></div>
+    <div class="tok-sw"><div class="tok-c" style="background:#0A0A0A"></div><div class="tok-l">Txt-1 #0A0A0A</div></div>
+    <div class="tok-sw"><div class="tok-c" style="background:#1E1E1E"></div><div class="tok-l">Txt-2 #1E1E1E</div></div>
+    <div class="tok-sw"><div class="tok-c" style="background:#4A4A4A"></div><div class="tok-l">Txt-3 #4A4A4A</div></div>
+    <div class="tok-sw"><div class="tok-c" style="background:#EFEFEF;border:1px solid #ddd"></div><div class="tok-l">Watch BG</div></div>
+    <div class="tok-sw"><div class="tok-c" style="background:#FEF0C7"></div><div class="tok-l">Warn BG</div></div>
+    <div class="tok-sw"><div class="tok-c" style="background:#6B2F00"></div><div class="tok-l">Warn #6B2F00</div></div>
+    <div class="tok-sw"><div class="tok-c" style="background:#D1FAE5"></div><div class="tok-l">OK BG</div></div>
+    <div class="tok-sw"><div class="tok-c" style="background:#064E3B"></div><div class="tok-l">OK #064E3B</div></div>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────
+   STATE
+───────────────────────────────────────── */
+let lang      = 'en';
+let curScr    = 's-status';
+let currentProg = 'Eco 50°';
+let delayIdx  = 0;
+let custTemp  = 50, custDur = 60;
+const DELAY_TR = ['Kapalı','1 Sa','2 Sa','3 Sa','6 Sa','12 Sa'];
+const DELAY_EN = ['Off','1 Hr','2 Hr','3 Hr','6 Hr','12 Hr'];
+
+/* 10-second countdown */
+const COUNT_START = 10;
+let countLeft  = COUNT_START;
+let timerInt   = null;
+/* ring circumference for r=35: 2π×35 = 219.9 */
+const CIRC = 219.9;
+
+/* Screen → flow-nav index */
+const SCR_FN = {'s-status':0,'s-salt':0,'s-programs':1,'s-options':2,'s-confirm':3,'s-custom':1,'s-running':4,'s-done':5};
+
+/* ─────────────────────────────────────────
+   NAVIGATION
+───────────────────────────────────────── */
+function goTo(id) {
+  if (curScr === id) return;
+  const cur = document.getElementById(curScr);
+  const tgt = document.getElementById(id);
+  if (!cur || !tgt) return;
+  cur.classList.remove('active');
+  cur.classList.add('exit-l');
+  setTimeout(() => cur.classList.remove('exit-l'), 320);
+  tgt.classList.add('active');
+  curScr = id;
+  updateFlowNav(SCR_FN[id] ?? 0);
+  announce(tgt.getAttribute('aria-label') || '');
+  if (id !== 's-running') stopTimer();
+  if (id === 's-done') animateDone();
+}
+
+/* ─────────────────────────────────────────
+   FLOW NAV
+───────────────────────────────────────── */
+function updateFlowNav(active) {
+  for (let i = 0; i <= 5; i++) {
+    const row = document.getElementById('fn' + i);
+    const num = document.getElementById('fn' + i + 'n');
+    if (!row || !num) continue;
+    row.classList.toggle('active', i === active);
+    num.classList.remove('done','current');
+    if      (i < active)  num.classList.add('done');
+    else if (i === active) num.classList.add('current');
+  }
+}
+
+/* ─────────────────────────────────────────
+   LANG TOGGLE
+───────────────────────────────────────── */
+function toggleLang() {
+  lang = lang === 'tr' ? 'en' : 'tr';
+  document.getElementById('lang-lbl').textContent = lang === 'tr' ? 'TR → EN' : 'EN → TR';
+  document.documentElement.lang = lang;
+  document.getElementById('lang-btn').setAttribute('aria-label',
+    lang === 'tr' ? 'Dili değiştir, şu an Türkçe' : 'Switch language, currently English');
+
+  document.querySelectorAll('[data-tr]').forEach(el => {
+    if (el.tagName === 'INPUT') return;
+    el.innerHTML = el.getAttribute('data-' + lang);
+  });
+  document.querySelectorAll('[data-ph-tr]').forEach(el => {
+    el.placeholder = el.getAttribute('data-ph-' + lang);
+  });
+  // delay value
+  const dv = document.getElementById('delay-v');
+  if (dv) dv.textContent = (lang === 'tr' ? DELAY_TR : DELAY_EN)[delayIdx];
+  buildConfirm();
+  announce(lang === 'tr' ? 'Dil Türkçeye değiştirildi' : 'Language changed to English');
+}
+
+/* ─────────────────────────────────────────
+   PROGRAM SELECTION
+───────────────────────────────────────── */
+function selProg(name, id) {
+  currentProg = name;
+  document.querySelectorAll('.lcard').forEach(c => {
+    c.classList.remove('sel');
+    const d = c.querySelector('.lcard-dot');
+    if (d) d.style.background = '';
+  });
+  const card = document.getElementById('pc-' + id);
+  if (card) {
+    card.classList.add('sel');
+    const d = card.querySelector('.lcard-dot');
+    if (d) d.style.background = 'var(--accent)';
+  }
+  const chip = document.getElementById('opt-chip');
+  if (chip) chip.textContent = name;
+  setTimeout(() => goTo('s-options'), 140);
+}
+
+/* ─────────────────────────────────────────
+   OPTIONS
+───────────────────────────────────────── */
+function cycleDelay() {
+  const vals = lang === 'tr' ? DELAY_TR : DELAY_EN;
+  delayIdx = (delayIdx + 1) % vals.length;
+  const dv = document.getElementById('delay-v');
+  if (dv) dv.textContent = vals[delayIdx];
+  document.getElementById('delay-row').setAttribute('aria-label',
+    (lang==='tr'?'Erteleme: ':'Delay: ') + vals[delayIdx]);
+  announce((lang==='tr'?'Erteleme ':'Delay ') + vals[delayIdx]);
+}
+
+function syncTog(inp) {
+  const k = inp.parentElement.querySelector('.tog-k');
+  if (k) k.style.transform = inp.checked ? 'translateX(12px)' : '';
+}
+
+/* ─────────────────────────────────────────
+   CONFIRM BUILD
+───────────────────────────────────────── */
+function buildConfirm() {
+  const ON  = lang==='tr'?'Açık':'On';
+  const OFF = lang==='tr'?'Kapalı':'Off';
+  const vals = lang==='tr'?DELAY_TR:DELAY_EN;
+  const sp = document.getElementById('tog-sp')?.checked;
+  const hl = document.getElementById('tog-hl')?.checked;
+  const ed = document.getElementById('tog-ed')?.checked;
+  const setV = (id, txt, active) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = txt;
+    el.className = 'conf-v' + (active ? ' on' : '');
+  };
+  setV('cv-sp', sp?ON:OFF, sp);
+  setV('cv-hl', hl?ON:OFF, hl);
+  setV('cv-ed', ed?ON:OFF, ed);
+  setV('cv-dl', vals[delayIdx], delayIdx>0);
+  const lbl = document.getElementById('conf-prog-lbl');
+  if (lbl) lbl.textContent = currentProg;
+}
+
+/* ─────────────────────────────────────────
+   CUSTOM PROGRAM
+───────────────────────────────────────── */
+function adjC(type, delta) {
+  if (type === 'temp') {
+    custTemp = Math.max(30, Math.min(90, custTemp + delta));
+    document.getElementById('cv-temp').textContent = custTemp + '°';
+  } else {
+    custDur = Math.max(15, Math.min(180, custDur + delta));
+    document.getElementById('cv-dur').textContent = custDur + 'dk';
+  }
+}
+function _getCustomName() {
+  const inp = document.getElementById('cust-name');
+  return (inp && inp.value.trim()) || (lang==='tr'?`Özel ${custTemp}°`:`Custom ${custTemp}°`);
+}
+function _injectCustomCard(name) {
+  const list = document.getElementById('custom-list');
+  if (!list) return;
+  const id = 'pc-cx' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'lcard'; div.role = 'listitem'; div.tabIndex = 0;
+  div.setAttribute('aria-label', name + ' ' + custTemp + '° ' + custDur + 'dk');
+  div.innerHTML = `<div class="lcard-dot" style="background:var(--accent)"></div>
+    <div class="lcard-body"><p class="lcard-name">${name}</p><p class="lcard-meta">${custTemp}° · ~${custDur}dk</p></div>
+    <span class="lcard-chev" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M3 2l3.5 3L3 8" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round"/></svg></span>`;
+  const n = name; // capture
+  div.onclick = () => { currentProg = n; const c=document.getElementById('opt-chip'); if(c)c.textContent=n; setTimeout(()=>goTo('s-options'),140); };
+  list.appendChild(div);
+}
+function saveAndRun() {
+  const name = _getCustomName();
+  _injectCustomCard(name);
+  currentProg = name;
+  announce(lang==='tr'?name+' kaydedildi':name+' saved');
+  startRunning();
+}
+function runOnce() {
+  currentProg = _getCustomName();
+  const inp = document.getElementById('cust-name'); if(inp) inp.value='';
+  startRunning();
+}
+
+/* ─────────────────────────────────────────
+   START RUNNING
+───────────────────────────────────────── */
+function startRunning() {
+  const pn = document.getElementById('run-pname');
+  if (pn) pn.textContent = currentProg;
+  goTo('s-running');
+  initTimer();
+}
+
+/* ─────────────────────────────────────────
+   10-SECOND COUNTDOWN TIMER
+   - countLeft starts at 10
+   - each real second: countLeft--
+   - ring progresses: (10 - countLeft) / 10
+   - at 0 → auto goTo('s-done')
+───────────────────────────────────────── */
+function initTimer() {
+  stopTimer();
+  countLeft = COUNT_START;
+  renderTimer();
+  timerInt = setInterval(() => {
+    if (curScr !== 's-running') { stopTimer(); return; }
+    countLeft--;
+    renderTimer();
+    if (countLeft <= 0) {
+      stopTimer();
+      setTimeout(() => goTo('s-done'), 300);
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInt);
+  timerInt = null;
+}
+
+function renderTimer() {
+  const el = document.getElementById('run-timer');
+  if (el) {
+    const s = Math.max(0, countLeft);
+    el.textContent = '00:' + String(s).padStart(2,'0');
+  }
+  // Progress: fraction of total elapsed = (COUNT_START - countLeft) / COUNT_START
+  const elapsed = COUNT_START - Math.max(0, countLeft);
+  const pct = Math.round((elapsed / COUNT_START) * 100);
+  const pctEl = document.getElementById('ring-pct');
+  if (pctEl) pctEl.textContent = pct + '%';
+  const ring = document.getElementById('ring-prog');
+  if (ring) ring.style.strokeDashoffset = CIRC * (1 - pct / 100);
+}
+
+/* ─────────────────────────────────────────
+   DONE / HOME
+───────────────────────────────────────── */
+function animateDone() {
+  const r = document.querySelector('#s-done .done-ring');
+  if (!r) return;
+  r.style.animation = 'none';
+  void r.offsetWidth;
+  r.style.animation = '';
+}
+function goHome() {
+  // Reset warning visibility
+  const wb = document.getElementById('warn-btn');
+  if (wb) wb.classList.remove('hidden');
+  goTo('s-status');
+}
+function dismissWarn() {
+  const wb = document.getElementById('warn-btn');
+  if (wb) wb.classList.add('hidden');
+  goTo('s-status');
+}
+
+/* ─────────────────────────────────────────
+   ARIA
+───────────────────────────────────────── */
+function announce(msg) {
+  const el = document.getElementById('aria-live');
+  if (!el) return;
+  el.textContent = '';
+  setTimeout(() => { el.textContent = msg; }, 60);
+}
+
+/* ─────────────────────────────────────────
+   LIVE CLOCK
+───────────────────────────────────────── */
+function updateClock() {
+  const el = document.getElementById('st-clk');
+  if (!el) return;
+  const n = new Date();
+  el.textContent = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  // Render English as default
+  document.querySelectorAll('[data-tr]').forEach(el => {
+    if (el.tagName === 'INPUT') return;
+    el.innerHTML = el.getAttribute('data-en');
+  });
+  document.querySelectorAll('[data-ph-tr]').forEach(el => {
+    el.placeholder = el.getAttribute('data-ph-en');
+  });
+  const dv = document.getElementById('delay-v');
+  if (dv) dv.textContent = DELAY_EN[delayIdx];
+  document.documentElement.lang = 'en';
+
+  document.querySelectorAll('.tog input:checked').forEach(syncTog);
+  renderTimer();
+  updateFlowNav(0);
+});
+</script>
+</body>
+</html>
